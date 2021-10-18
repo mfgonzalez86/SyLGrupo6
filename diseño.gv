@@ -1,0 +1,137 @@
+digraph G {
+
+ rankdir="LR";
+
+ style=filled;
+ label = "Scanner"
+
+//Nodos
+ ComienzoLinea; // [color=red];
+ //OUT;
+ PosibleComentario;
+ PosibleFinComentario;
+ Block;
+ Line;
+ //EnPalabra;
+ Numeral;
+// HASHTAG_D; HASHTAG_DE; HASHTAG_DEF;HASHTAG_DEFI; HASHTAG_DEFIN; HASHTAG_DEFINE;
+//HASHTAG_U; HASHTAG_UN; HASHTAG_UND; HASHTAG_UNDE;HASHTAG_UNDEF;
+ //i2;n3;c;l;u2;d3;e4;
+// DefinePrimerChar;
+// defIndentificador;
+// UndefPrimerChar;
+// EnValorIdentificador;
+// UndefIndentificador;
+// defArchivo ;
+ ComienzoLinea -> PosibleComentario  [label="' / ' \n ", tailport=ne ,headport=nw] ;
+ ComienzoLinea -> Numeral [label=" '#' \n " ,tailport=n ,headport=sw];
+ 
+ //Transiciones
+ subgraph cluster_Comentario {
+      label = "COMENTARIO"
+
+
+
+ //ComienzoLinea -> OUT [label="' ' o '/t' \n OtroChar", tailport=nw ,headport=nw] ;
+ //ComienzoLinea -> EnPalabra [label="distinto\n ('#',' ','/t','/n') \n  concatenar()\n buscar()\ OtroChar", tailport=e ,headport=nw] ;
+ //ComienzoLinea -> ComienzoLinea  [headlabel="' /n ' \n OtroChar", tailport=n ,headport=w] ;
+ PosibleComentario ->Block   [label=" '*' \n " ,tailport=ne ,headport=nw] ;
+ PosibleComentario ->Line   [label=" '/' \n " ,tailport=s ,headport=sw] ;
+ 
+ Block -> Block [label="distinto '*' \n " ,tailport=e ,headport=e];
+ Block -> PosibleFinComentario   [label=" '*' \n " ,tailport=n ,headport=n] ;
+ 
+ Line -> Line  [headlabel="distinto  '/n' \n " ,tailport=e ,headport=e] ;
+ PosibleFinComentario -> Block   [taillabel=" 'distinto /' \n " ,tailport=s ,headport=s]
+ PosibleFinComentario -> OUT [label=" '/' \n  Devuelve token COMENTARIO" ,tailport=s ,headport=s];
+ }
+ Line -> ComienzoLinea  [label=" '/n' \n  Devuelve token COMENTARIO" ,tailport=s ,headport=s] ; 
+ /*OUT -> OUT [label=" ' ' o '/t' \n OtroChar" ,tailport=n ,headport=n];
+ OUT -> EnPalabra [label="distinto ( '/n', ' ', '/t')\n  OtroChar " ,tailport=ne ,headport=w];
+ OUT -> ComienzoLinea [label=" '/n' \n OtroChar" ,tailport=sw ,headport=se];
+ EnPalabra -> OUT [label="' ' o '/t' \n reemplazar()\n OtroChar" ,tailport=s ,headport=se];
+ EnPalabra -> ComienzoLinea [label=" '/n' \nreemplazar()\n OtroChar" ,tailport=sw ,headport=sw];
+ EnPalabra -> PosibleComentario [label="'/' \n OtroChar" ,tailport=n ,headport=n];
+ EnPalabra -> EnPalabra [taillabel="distinto ( '/n', ' ', '/t')\n  concatenar() \n OtroChar" ,tailport=e ,headport=e];
+*/
+
+ 
+ // Atender Define, Include, Undef
+ 
+Numeral -> ComienzoLinea [label=" '/n' \n Devuelve token NUMERAL" ,tailport=s ,headport=e] ;
+ 
+ 
+ Numeral -> Numeral_D [label="'d' \n Devuelve token NUMERAL" ,tailport=n ,headport=n];
+ 
+ 
+
+ //Define
+ 
+ subgraph cluster_define {
+                        style=filled;
+                        node [style=filled,color=white];
+                         
+                        Numeral_D -> Numeral_DE [label="'e' \n " ,tailport=se ,headport=sw];
+                        Numeral_DE -> Numeral_DEF[label="'f' \n " ,tailport=se ,headport=sw];
+                        Numeral_DEF->Numeral_DEFI [label="'i' \n " ,tailport=se ,headport=sw];
+                        Numeral_DEFI->Numeral_DEFIN [label="'n' \n " ,tailport=se ,headport=sw];
+                        Numeral_DEFIN -> Numeral_DEFINE [label="'e' \n " ,tailport=se ,headport=sw];
+                       // Numeral_DEFINE ->  Numeral_DEFINE [label="Comparar Define" ,tailport=e ,headport=s];
+                        Numeral_DEFINE ->  DefinePrimerChar   [label="' ' o '/t' \n Devuelve token DEFINE " ,tailport=se ,headport=sw];
+                        DefinePrimerChar -> defIndentificador [label="[letras] o '_'\n \n concatenar() " ,tailport=se ,headport=sw];
+                        defIndentificador -> defIndentificador [label="[letras] o '_' o [numeros]\n \n concatenar() " ,tailport=e ,headport=w];
+                        defIndentificador -> EnValorIdentificador [label="' ' o '/t' \n \n guardarIndentificador() \n Devuelve token IDENTIFICADOR" ,tailport=se ,headport=sw];
+                         labeljust="l";
+                         fontsize = 20 fontcolor=blue;
+                         label = "#define";
+}
+ 
+ EnValorIdentificador -> ComienzoLinea [label=" '/n' \n \n guardarDefine() \n Devuelve token TEXTOREEMPLAZO" ,tailport=e ,headport=nw] ;
+ EnValorIdentificador ->  EnValorIdentificador [label="distinto '/n',' ', '/t' \n concatenar() " ,tailport=w ,headport=n] ;
+ Numeral -> Numeral_U [taillabel="'u' \n",label="'u' \n otroChar" ,tailport=n,headport=n];
+ 
+ 
+ subgraph cluster_undef {
+                        style=filled;
+                        node [style=filled,color=white];
+                    
+                         Numeral_U -> Numeral_UN  [label="n' \n " ,tailport=se ,headport=sw];
+                         Numeral_UN ->Numeral_UND [label="'d' \n " ,tailport=se ,headport=sw];
+                         Numeral_UND ->Numeral_UNDE [label="'e' \n " ,tailport=se ,headport=sw];
+                         Numeral_UNDE-> Numeral_UNDEF [label="'f' \n " ,tailport=se ,headport=sw];
+                         Numeral_UNDEF ->  UndefPrimerChar [label="[letras] o '_'\n \n concatenar() \n Devuelve token UNDEF" ,tailport=se ,headport=sw];
+                         UndefPrimerChar->UndefIndentificador [label="[letras] o '_' o [numeros]\n \n concatenar() " ,tailport=e ,headport=w];
+                         UndefIndentificador -> UndefIndentificador [label="[letras] o '_' o [numeros]\n \n concatenar() " ,tailport=e ,headport=w];
+                         labeljust="l";
+                         fontsize = 20 fontcolor=blue;
+                         label = "#undef";
+    
+}
+  UndefIndentificador -> ComienzoLinea [label=" '/n' \n removeDefine() \n Devuelve IDENTIFICADOR" ,tailport=e ,headport=sw] ;
+
+
+/*
+ Hashtag -> i2 [taillabel="'i' \n otroChar",headlabel="'u' \n otroChar" ,tailport=w ,headport=n];
+ subgraph cluster_include {
+                        style=filled;
+                        node [style=filled,color=white];
+                         
+                         i2 -> n3 [label="'n' \n otroChar" ,tailport=se ,headport=sw];
+                         n3 -> c [label="'c' \n otroChar" ,tailport=se ,headport=sw];
+                         c -> l [label="'l' \n otroChar" ,tailport=se ,headport=sw];
+                         l -> u2 [label="'u' \n otroChar" ,tailport=se ,headport=sw];
+                         u2 -> d3 [label="'d' \n otroChar" ,tailport=se ,headport=sw];
+                         d3 -> e4 [label="'e' \n otroChar" ,tailport=se ,headport=sw];
+                        e4 ->  PosibleDefArchivo   [label="' ' o '/t' \n otroChar " ,tailport=se ,headport=sw];
+                        PosibleDefArchivo -> defArchivo [label=" ' '' ' \n otroChar " ,tailport=se ,headport=sw];
+                        defArchivo -> defArchivo [label=" distinto (' '' ','/n',' ',' /t') \n concatenar(),buscarArchivo(),pegar()\n otroChar " ,tailport=n ,headport=w];
+                        defArchivo -> finDefArchivo [label=" ' '' ' \n concatenar(),buscarArchivo(),pegar()\n otroChar " ,tailport=se ,headport=sw];
+                         labeljust="l";
+                         fontsize = 20 fontcolor=blue;
+                         label = "#include";
+    
+}
+finDefArchivo -> ComienzoLinea [label="' ' o '/t' \n otroChar " ,tailport=se ,headport=sw];
+ */
+  
+}
